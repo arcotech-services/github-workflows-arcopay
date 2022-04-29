@@ -7,6 +7,10 @@ on:
         required: true
         type: string
         default: ghcr.io
+      CONTEXT:
+        required: true
+        type: string
+        default: .
     secrets:
       GH_REGISTRY_USERNAME:
         required: true
@@ -16,6 +20,7 @@ env:
   REGISTRY: ${{ inputs.REGISTRY }}
   GH_REGISTRY_USERNAME: ${{ secrets.GH_REGISTRY_USERNAME }}
   GH_REGISTRY_PASSWORD: ${{ secrets.GH_REGISTRY_PASSWORD }}
+  CONTEXT: ${{ inputs.CONTEXT }}
 
 jobs:
   build:
@@ -35,7 +40,7 @@ jobs:
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v2
         with:
-          context: .
+          context: ${{ env.CONTEXT }}
           push: true
           tags: |
             ghcr.io/${{ github.repository }}:${{ steps.sha.outputs.sha8 }}
