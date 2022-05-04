@@ -11,6 +11,10 @@ on:
         required: false
         type: string
         default: .
+      WITH_XDEBUG:
+        required: false
+        type: string
+        default: false
     secrets:
       GH_REGISTRY_USERNAME:
         required: true
@@ -21,6 +25,7 @@ env:
   GH_REGISTRY_USERNAME: ${{ secrets.GH_REGISTRY_USERNAME }}
   GH_REGISTRY_PASSWORD: ${{ secrets.GH_REGISTRY_PASSWORD }}
   CONTEXT: ${{ inputs.CONTEXT }}
+  WITH_XDEBUG: ${{ inputs.WITH_XDEBUG }}
 
 jobs:
   build:
