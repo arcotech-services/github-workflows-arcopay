@@ -29,12 +29,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: deploy-${{ env.APP_ENV }}
-        uses: jaapio/keelsh-deploy@master
-        with:
-          keelBaseUrl: ${{ env.KEEL_WEBHOOK_URL }}
-          image: ghcr.io/${{ github.repository }}
-          tag: ${{ steps.sha.outputs.sha8 }}
-
+        run: |
+         curl -v -X POST -H "Content-Type: application/json" -d '{ "name": "ghcr.io/${{ github.repository }}", "tag": "${{ steps.sha.outputs.sha8 }}"}' ${{ env.KEEL_WEBHOOK_URL }}/v1/webhooks/native
       #- name: Deploy ${{ env.APP_NAME }} ${{ env.APP_ENV }} version ${{ steps.sha.outputs.sha8 }} by user ${{ github.actor }}
       #  if: always()
       #  uses: act10ns/slack@v1
