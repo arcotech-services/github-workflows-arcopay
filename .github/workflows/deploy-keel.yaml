@@ -28,7 +28,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: deploy
+      - name: deploy-${{ env.APP_ENV }}
         uses: jaapio/keelsh-deploy@master
         with:
           keelBaseUrl: ${{ env.KEEL_WEBHOOK_URL }}
