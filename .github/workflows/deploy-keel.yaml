@@ -28,6 +28,10 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: Get Short SHA
+        if: ${{ github.event.workflow_run.conclusion == 'success' }}
+        id: sha
+        run: echo "::set-output name=sha8::$(echo ${GITHUB_SHA} | cut -c1-8)"
       - name: deploy-${{ env.APP_ENV }}
         run: |
          curl -v -X POST -H "Content-Type: application/json" -d '{ "name": "ghcr.io/${{ github.repository }}", "tag": '"'${{ steps.sha.outputs.sha8 }}'"'}' ${{ env.KEEL_WEBHOOK_URL }}/v1/webhooks/native
