@@ -54,11 +54,18 @@ jobs:
           command: proj
           options: create ${{ env.APP_NAME }} -f ${{ env.ARGOCD_CONF_DIR }}/project-${{ env.APP_ENV }}.yaml
 
+      - uses: clowdhaus/argo-cd-action/@v1.9.0
+        name: add argocd app
+        with:
+          version: ${{ env.ARGOCD_CLI_VERSION }}
+          command: app
+          options: create ${{ env.APP_NAME }} -f ${{ env.ARGOCD_CONF_DIR }}/project-${{ env.APP_ENV }}.yaml          
+
       - name: ArgoCD Overwrite Image Tag
         uses: clowdhaus/argo-cd-action/@main
         with:
           version: ${{ env.ARGOCD_CLI_VERSION }}
-          command: app set at-omr-v2-stg
+          command: app set ${{ env.APP_NAME }}-${{ env.APP_ENV }}
           options: --kustomize-image "ghcr.io/${{ github.repository }}:${{ steps.sha.outputs.sha8 }}"
 
       - name: Sync Staging
