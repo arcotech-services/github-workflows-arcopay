@@ -28,7 +28,8 @@ on:
 env:
   APP_ENV: "${{ inputs.APP_ENV }}"
   APP_NAME: "${{ inputs.APP_NAME }}"
-  ARGOCD_CONF_DIR: "${{ inputs.ARGOCD_CONF_DIR }}" 
+  ARGOCD_CONF_DIR: "${{ inputs.ARGOCD_CONF_DIR }}"
+  GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
 
 jobs:
   argocd:
@@ -37,7 +38,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Get Short SHA
-        if: ${{ github.event.workflow_run.conclusion == 'success' }}
         id: sha
         run: echo "::set-output name=sha8::$(echo ${GITHUB_SHA} | cut -c1-8)"
       - name: argocd login
@@ -47,9 +47,6 @@ jobs:
           command: login
           options: --insecure --grpc-web --username ${{ secrets.ARGOCD_USER }} --password ${{ secrets.ARGOCD_PASS}} ${{ secrets.ARGOCD_URL }}
       - uses: clowdhaus/argo-cd-action/@main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-          APP_NAME: ${{ env.APP_NAME }}
         with:
           command: proj
-          options: create pay-loadbay -f ${{ env.ARGOCD_CONF_DIR }}/project-${{ env.APP_ENV }}.y*ml
+          options: create ${{ env.APP_NAME }} -f ${{ env.ARGOCD_CONF_DIR }}/project-${{ env.APP_ENV }}.y*ml
