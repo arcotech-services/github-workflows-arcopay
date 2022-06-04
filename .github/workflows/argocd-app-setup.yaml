@@ -41,12 +41,12 @@ jobs:
         id: sha
         run: echo "::set-output name=sha8::$(echo ${GITHUB_SHA} | cut -c1-8)"
       - name: argocd login
-        uses: clowdhaus/argo-cd-action/@main
+        uses: clowdhaus/argo-cd-action/@v1.9.0
         with:
           version: 1.8.4
           command: login
           options: --insecure --grpc-web --username ${{ secrets.ARGOCD_USER }} --password ${{ secrets.ARGOCD_PASS}} ${{ secrets.ARGOCD_URL }}
-      - uses: clowdhaus/argo-cd-action/@main
+      - uses: clowdhaus/argo-cd-action/@v1.9.0
         name: add argocd project
         with:
           command: proj
