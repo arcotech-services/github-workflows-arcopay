@@ -34,7 +34,7 @@ env:
   APP_ENV: ${{ inputs.APP_ENV }}
 
 jobs:
-  build:
+  docker:
     runs-on: ubuntu-latest
     steps:
       - name: Get Short SHA
