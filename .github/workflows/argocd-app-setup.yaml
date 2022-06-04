@@ -30,20 +30,26 @@ env:
   APP_NAME: "${{ inputs.APP_NAME }}"
   ARGOCD_CONF_DIR: "${{ inputs.ARGOCD_CONF_DIR }}"
   GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+  ARGOCD_CLI_VERSION: 2.3.3
 
 jobs:
   argocd:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Get Short SHA
+        id: sha
+        run: echo "::set-output name=sha8::$(echo ${GITHUB_SHA} | cut -c1-8)"
       - name: argocd login
         uses: clowdhaus/argo-cd-action/@v1.9.0
         with:
-          version: 2.3.3
+          version: ${{ env.ARGOCD_CLI_VERSION }}
           command: login
           options: --insecure --grpc-web --username ${{ secrets.ARGOCD_USER }} --password ${{ secrets.ARGOCD_PASS}} ${{ secrets.ARGOCD_URL }}
       - uses: clowdhaus/argo-cd-action/@v1.9.0
         name: add argocd project
         with:
-          version: 2.3.3
+          version: ${{ env.ARGOCD_CLI_VERSION }}
           command: proj
           options: create ${{ env.APP_NAME }} -f ${{ env.ARGOCD_CONF_DIR }}/project-${{ env.APP_ENV }}.y*ml
