@@ -44,5 +44,6 @@ jobs:
       - uses: clowdhaus/argo-cd-action/@v1.9.0
         name: add argocd project
         with:
+          version: 2.3.3
           command: proj
           options: create ${{ env.APP_NAME }} -f ${{ env.ARGOCD_CONF_DIR }}/project-${{ env.APP_ENV }}.y*ml
