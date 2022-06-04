@@ -52,14 +52,14 @@ jobs:
         with:
           version: ${{ env.ARGOCD_CLI_VERSION }}
           command: proj
-          options: create ${{ env.APP_NAME }}-${{ env.APP_ENV }} -f ${{ env.ARGOCD_CONF_DIR }}/project-${{ env.APP_ENV }}.yaml
+          options: create ${{ env.APP_NAME }}-${{ env.APP_ENV }} -f ${{ env.ARGOCD_CONF_DIR }}/project-${{ env.APP_ENV }}.yaml --upsert
 
       - uses: clowdhaus/argo-cd-action/@v1.9.0
         name: add argocd app
         with:
           version: ${{ env.ARGOCD_CLI_VERSION }}
           command: app
-          options: create ${{ env.APP_NAME }}-${{ env.APP_ENV }} -f ${{ env.ARGOCD_CONF_DIR }}/project-${{ env.APP_ENV }}.yaml          
+          options: create ${{ env.APP_NAME }}-${{ env.APP_ENV }} -f ${{ env.ARGOCD_CONF_DIR }}/project-${{ env.APP_ENV }}.yaml --upsert      
 
       - name: ArgoCD Overwrite Image Tag
         uses: clowdhaus/argo-cd-action/@main
