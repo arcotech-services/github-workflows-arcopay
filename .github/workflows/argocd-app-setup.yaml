@@ -16,7 +16,7 @@ on:
         type: string
         default: .argocd
     secrets:
-      GITHUB_TOKEN:
+      GH_TOKEN:
         required: true
       ARGOCD_USER:
         required: true
@@ -47,7 +47,7 @@ jobs:
           options: --insecure --grpc-web --username ${{ secrets.ARGOCD_USER }} --password ${{ secrets.ARGOCD_PASS}} ${{ secrets.ARGOCD_URL }}
       - uses: clowdhaus/argo-cd-action/@main
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           APP_NAME: ${{ env.APP_NAME }}
         with:
           command: proj
