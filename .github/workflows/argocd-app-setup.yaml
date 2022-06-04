@@ -47,6 +47,7 @@ jobs:
           command: login
           options: --insecure --grpc-web --username ${{ secrets.ARGOCD_USER }} --password ${{ secrets.ARGOCD_PASS}} ${{ secrets.ARGOCD_URL }}
       - uses: clowdhaus/argo-cd-action/@main
+        name: add argocd project
         with:
           command: proj
           options: create ${{ env.APP_NAME }} -f ${{ env.ARGOCD_CONF_DIR }}/project-${{ env.APP_ENV }}.y*ml
