@@ -52,4 +52,4 @@ jobs:
         with:
           version: ${{ env.ARGOCD_CLI_VERSION }}
           command: proj
-          options: create ${{ env.APP_NAME }} -f ${{ env.ARGOCD_CONF_DIR }}/project-${{ env.APP_ENV }}.y*ml
+          options: create ${{ env.APP_NAME }} -f ${{ env.ARGOCD_CONF_DIR }}/project-${{ env.APP_ENV }}.yaml
