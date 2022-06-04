@@ -35,11 +35,6 @@ jobs:
   argocd:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Get Short SHA
-        id: sha
-        run: echo "::set-output name=sha8::$(echo ${GITHUB_SHA} | cut -c1-8)"
       - name: argocd login
         uses: clowdhaus/argo-cd-action/@v1.9.0
         with:
