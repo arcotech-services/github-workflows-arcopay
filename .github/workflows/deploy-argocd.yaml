@@ -41,7 +41,7 @@ env:
   ARGOCD_CLI_VERSION: 2.3.3
 
 jobs:
-  sync-stg:
+  sync:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -62,14 +62,14 @@ jobs:
         with:
           version: ${{ env.ARGOCD_CLI_VERSION }}
           command: proj
-          options: create -f ${{ env.ARGOCD_CONF_DIR }}/${{ env.APP_PROJ_FILE_ARGOCD }} --upsert
+          options: create -f ${{ env.ARGOCD_CONF_DIR }}/${{ env.APP_ENV }}/${{ env.APP_PROJ_FILE_ARGOCD }} --upsert
 
       - uses: clowdhaus/argo-cd-action/@v1.9.0
         name: add argocd app
         with:
           version: ${{ env.ARGOCD_CLI_VERSION }}
           command: app
-          options: create -f ${{ env.ARGOCD_CONF_DIR }}/${{ env.APP_FILE_ARGOCD }} --upsert      
+          options: create -f ${{ env.ARGOCD_CONF_DIR }}/${{ env.APP_ENV }}/${{ env.APP_FILE_ARGOCD }} --upsert      
 
       - name: ArgoCD Overwrite Image Tag
         uses: clowdhaus/argo-cd-action/@main
