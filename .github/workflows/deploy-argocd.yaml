@@ -78,7 +78,7 @@ jobs:
           command: app set ${{ env.APP_NAME }}-${{ env.APP_ENV }}
           options: --kustomize-image "ghcr.io/${{ github.repository }}:${{ steps.sha.outputs.sha8 }}"
 
-      - name: Sync Staging
+      - name: Sync ${{ env.APP_ENV }}
         uses: clowdhaus/argo-cd-action/@main
         with:
           command: app sync ${{ env.APP_NAME }}-${{ env.APP_ENV }} --prune
