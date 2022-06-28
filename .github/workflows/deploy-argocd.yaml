@@ -82,3 +82,11 @@ jobs:
         uses: clowdhaus/argo-cd-action/@main
         with:
           command: app sync ${{ env.APP_NAME }}-${{ env.APP_ENV }} --prune
+
+      - name: Deploy ${{ env.APP_NAME }} ${{ env.APP_ENV }} version ${{ steps.sha.outputs.sha8 }} by user ${{ github.actor }}
+        if: always()
+        uses: act10ns/slack@v1
+        with:
+          status: ${{ job.status }}
+          steps: ${{ toJson(steps) }}
+          channel: "${{ env.ALERTS_CHANNEL }}"
