@@ -25,11 +25,13 @@ env:
   KUBE_CONTEXT: "${{ inputs.KUBE_CONTEXT }}"
 
 concurrency:
-  group: "${{ env.CLAIM_NAME }}"
+  group: ${{ inputs.CLAIM_NAME }}
   cancel-in-progress: false
 
 jobs:
   deploy:
+    environment:
+      name: ${{ inputs.CLAIM_NAME }}
     name: deploy
     runs-on: ubuntu-latest
     steps:
