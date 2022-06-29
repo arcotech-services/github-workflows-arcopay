@@ -9,9 +9,6 @@ on:
       MANIFESTS_DIR:
         required: true
         type: string
-      KUBE_CONTEXT:
-        required: true
-        type: string
     secrets:
       KUBE_CONFIG:
         required: true
