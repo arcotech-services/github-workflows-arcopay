@@ -81,7 +81,7 @@ jobs:
         with:
           version: ${{ env.ARGOCD_CLI_VERSION }}
           command: app set ${{ env.APP_NAME }}-${{ env.APP_ENV }}
-          options: --kustomize-image "ghcr.io/${{ github.repository }}:${{ if steps.sha.outputs.sha8 }}${{ if env.DOCKER_TAG_SUFFIX  }}"
+          options: --kustomize-image "ghcr.io/${{ github.repository }}:${{ steps.sha.outputs.sha8 }}${{ env.DOCKER_TAG_SUFFIX }}"
 
       - name: Sync ${{ env.APP_ENV }}
         uses: clowdhaus/argo-cd-action/@main
