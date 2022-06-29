@@ -30,8 +30,6 @@ concurrency:
 
 jobs:
   deploy:
-    environment:
-      name: "${{ env.CLAIM_NAME }}"
     name: deploy
     runs-on: ubuntu-latest
     steps:
