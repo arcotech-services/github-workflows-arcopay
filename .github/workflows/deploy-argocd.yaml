@@ -24,7 +24,7 @@ on:
       DOCKER_TAG_SUFFIX:
         required: false
         type: string
-        default: false
+        default: ""
     secrets:
       GH_TOKEN:
         required: true
