@@ -22,7 +22,6 @@ env:
   MANIFESTS_DIR: "${{ inputs.MANIFESTS_DIR }}"
   KUBE_CONFIG: "${{ secrets.KUBE_CONFIG }}"
   KUSTOMIZE_VERSION: 4.5.5
-  KUBE_CONTEXT: "${{ inputs.KUBE_CONTEXT }}"
 
 concurrency:
   group: ${{ inputs.CLAIM_NAME }}
@@ -35,6 +34,11 @@ jobs:
     name: deploy
     runs-on: ubuntu-latest
     steps:
+      - run: |
+          echo "CLAIM_NAME=$(echo ${{ inputs.CLAIM_NAME }})" >> $GITHUB_ENV
+          echo "MANIFESTS_DIR=$(echo ${{ inputs.MANIFESTS_DIR }})" >> $GITHUB_ENV
+        name: set env variabls 
+
       - name: Check out code
         uses: actions/checkout@v2
       
@@ -54,7 +58,6 @@ jobs:
         with:
           method: kubeconfig
           kubeconfig: ${{ secrets.KUBE_CONFIG }} # Use secret (https://developer.github.com/actions/managing-workflows/storing-secrets/)
-          context: ${{ env.KUBE_CONTEXT }} # If left unspecified, current-context from KUBE_CONFIG is used as default
         id: set-context
 
       - uses: actions/setup-python@v1
@@ -70,5 +73,5 @@ jobs:
         run: |
           cd $MANIFESTS_DIR
           kustomize build|kubectl apply -f -
-          export COMPOSITION=$(kubectl get compositionrevisions|grep $APP_NAME|grep True|awk '{print $1}')
+          export COMPOSITION=$(kubectl get compositionrevisions|grep $CLAIM_NAME|grep True|awk '{print $1}')
           kubectl patch workloadclaim $CLAIM_NAME -p '{"spec":{"compositionRevisionRef":{"name":"'${COMPOSITION}'"}}}'
