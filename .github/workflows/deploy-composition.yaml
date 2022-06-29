@@ -1,0 +1,74 @@
+name: COMPOSITION
+
+on:
+  workflow_call:
+    inputs:
+      CLAIM_NAME:
+        required: true
+        type: string
+      MANIFESTS_DIR:
+        required: true
+        type: string
+      KUBE_CONTEXT:
+        required: true
+        type: string
+    secrets:
+      KUBE_CONFIG:
+        required: true
+
+
+env:
+  CLAIM_NAME: "${{ inputs.CLAIM_NAME }}"
+  MANIFESTS_DIR: "${{ inputs.MANIFESTS_DIR }}"
+  KUBE_CONFIG: "${{ secrets.KUBE_CONFIG }}"
+  KUSTOMIZE_VERSION: 4.5.5
+  KUBE_CONTEXT: "${{ inputs.KUBE_CONTEXT }}"
+
+concurrency:
+  group: "${{ env.KUBE_CONTEXT }}"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: ${{ env.CLAIM_NAME
+    name: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+      
+      - name: Get Short SHA
+        id: sha
+        run: echo "::set-output name=sha8::$(echo ${GITHUB_SHA} | cut -c1-8)"
+
+      - uses: azure/setup-kubectl@v1
+        id: install
+
+      - name: Setup Kustomize
+        uses: imranismail/setup-kustomize@v1
+        with:
+          kustomize-version: ${{ env.KUSTOMIZE_VERSION }}
+
+      - uses: azure/k8s-set-context@v1
+        with:
+          method: KUBE_CONFIG
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }} # Use secret (https://developer.github.com/actions/managing-workflows/storing-secrets/)
+          context: ${{ env.KUBE_CONTEXT }} # If left unspecified, current-context from KUBE_CONFIG is used as default
+        id: set-context
+
+      - uses: actions/setup-python@v1
+
+      - uses: BSFishy/pip-action@v1
+        with:
+          packages: kubesplit
+
+      - name: Setup yq
+        uses: chrisdickinson/setup-yq@latest
+
+      - name: Deploy Composition
+        run: |
+          cd $MANIFESTS_DIR
+          kustomize build|kubectl apply -f -
+          export COMPOSITION=$(kubectl get compositionrevisions|grep $APP_NAME|grep True|awk '{print $1}')
+          kubectl patch workloadclaim $CLAIM_NAME -p '{"spec":{"compositionRevisionRef":{"name":"'${COMPOSITION}'"}}}'
