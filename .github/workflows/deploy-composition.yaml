@@ -25,7 +25,7 @@ env:
   KUBE_CONTEXT: "${{ inputs.KUBE_CONTEXT }}"
 
 concurrency:
-  group: "${{ env.KUBE_CONTEXT }}"
+  group: "${{ env.CLAIM_NAME }}"
   cancel-in-progress: false
 
 jobs:
@@ -52,8 +52,8 @@ jobs:
 
       - uses: azure/k8s-set-context@v1
         with:
-          method: KUBE_CONFIG
-          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }} # Use secret (https://developer.github.com/actions/managing-workflows/storing-secrets/)
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG }} # Use secret (https://developer.github.com/actions/managing-workflows/storing-secrets/)
           context: ${{ env.KUBE_CONTEXT }} # If left unspecified, current-context from KUBE_CONFIG is used as default
         id: set-context
 
