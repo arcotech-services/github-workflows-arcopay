@@ -25,6 +25,10 @@ on:
         required: false
         type: string
         default: ""
+      DEPLOY_TYPE:
+        required: false
+        type: string
+        default: "kustomize"
     secrets:
       GH_TOKEN:
         required: true
@@ -44,6 +48,7 @@ env:
   GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
   ARGOCD_CLI_VERSION: 2.3.3
   DOCKER_TAG_SUFFIX: "${{ inputs.DOCKER_TAG_SUFFIX }}"
+  DEPLOY_TYPE: "${{ inputs.DEPLOY_TYPE }}"
 
 jobs:
   sync:
@@ -77,6 +82,7 @@ jobs:
           options: create -f ${{ env.ARGOCD_CONF_DIR }}/${{ env.APP_ENV }}/${{ env.APP_FILE_ARGOCD }} --upsert      
 
       - name: ArgoCD Overwrite Image Tag
+        if: ${{ env.DEPLOY_TYPE == 'kustomize' }}
         uses: clowdhaus/argo-cd-action/@main
         with:
           version: ${{ env.ARGOCD_CLI_VERSION }}
