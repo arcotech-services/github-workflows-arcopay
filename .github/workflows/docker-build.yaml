@@ -57,6 +57,7 @@ jobs:
             APP_ENV=${{ env.APP_ENV }}
             CI_ENV=${{ env.APP_ENV }}
             APP_VERSION=${{ steps.sha.outputs.sha8 }}
+            WITH_NEW_RELIC=true
           tags: |
             ghcr.io/${{ github.repository }}:${{ steps.sha.outputs.sha8 }}
             ghcr.io/${{ github.repository }}:latest
