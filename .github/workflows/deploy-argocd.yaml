@@ -90,7 +90,7 @@ jobs:
           options: --kustomize-image "ghcr.io/${{ github.repository }}:${{ steps.sha.outputs.sha8 }}${{ env.DOCKER_TAG_SUFFIX }}"
 
       - name: Sync ${{ env.APP_ENV }}
-        uses: clowdhaus/argo-cd-action/@main
+        uses: clowdhaus/argo-cd-action/@v1.12.1
         with:
           command: app sync ${{ env.APP_NAME }}-${{ env.APP_ENV }} --prune
 
