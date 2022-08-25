@@ -1,0 +1,81 @@
+---
+name: 🐳🔒 Container Security Scanning
+
+on:
+  schedule:
+    - cron: 0 5 * * 1-5
+
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: Run Security Scan
+        required: false
+
+env:
+  APP_NAME: app-name
+
+jobs:
+  scan:
+    name: Daily Vulnerability Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Login to GitHub Registry
+        if: success()
+        run: echo ${{ secrets.GH_REGISTRY_PASSWORD }} | docker login https://ghcr.io  -u ${{ secrets.GH_REGISTRY_USERNAME }} --password-stdin
+
+      - name: Pull docker image
+        run: docker pull 'ghcr.io/arcopay-software/${{env.APP_NAME}}'
+
+      - name: Critical Scanning Library
+        uses: lazy-actions/gitrivy@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          image: ghcr.io/arcopay-software/${{env.APP_NAME}}
+          vuln-type: library
+          severity: CRITICAL
+          issue_title: \[SEC\] ${{ env.APP_NAME }} library critical vulnerabilities
+          issue_label: ${{ env.APP_NAME }},library-vulnerability,sec,critical
+
+        env:
+          TRIVY_USERNAME: ${{ secrets.GH_REGISTRY_USERNAME }}
+          TRIVY_PASSWORD: ${{ secrets.GH_REGISTRY_PASSWORD }}
+
+      - name: Critical Scanning OS
+        uses: lazy-actions/gitrivy@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          image: ghcr.io/arcopay-software/${{env.APP_NAME}}
+          vuln-type: os
+          severity: CRITICAL
+          issue_title: \[SEC\] ${{ env.APP_NAME }} OS critical vulnerabilities
+          issue_label: ${{ env.APP_NAME }},os-vulnerability,sec,critical
+        env:
+          TRIVY_USERNAME: ${{ secrets.GH_REGISTRY_USERNAME }}
+          TRIVY_PASSWORD: ${{ secrets.GH_REGISTRY_PASSWORD }}
+
+      - name: High Scanning library
+        uses: lazy-actions/gitrivy@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          image: ghcr.io/arcopay-software/${{env.APP_NAME}}
+          vuln-type: library
+          severity: HIGH
+          issue_title: \[SEC\] ${{ env.APP_NAME }} library high vulnerabilities
+          issue_label: ${{ env.APP_NAME }},library-vulnerability,sec,high
+
+        env:
+          TRIVY_USERNAME: ${{ secrets.GH_REGISTRY_USERNAME }}
+          TRIVY_PASSWORD: ${{ secrets.GH_REGISTRY_PASSWORD }}
+
+      - name: High Scanning OS
+        uses: lazy-actions/gitrivy@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          image: ghcr.io/arcopay-software/${{env.APP_NAME}}
+          vuln-type: os
+          severity: HIGH
+          issue_title: \[SEC\] ${{ env.APP_NAME }} OS high vulnerabilities
+          issue_label: ${{ env.APP_NAME }},os-vulnerability,sec,high
+        env:
+          TRIVY_USERNAME: ${{ secrets.GH_REGISTRY_USERNAME }}
+          TRIVY_PASSWORD: ${{ secrets.GH_REGISTRY_PASSWORD }}

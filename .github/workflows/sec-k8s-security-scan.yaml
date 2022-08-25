@@ -1,0 +1,94 @@
+---
+name: ☸️ 🔒 k8s Security Scanning
+
+on:
+  pull_request:
+    paths:
+      - .k8s/**
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: Run Security Scan
+        required: false
+
+concurrency:
+  group: k8s-sec-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  APP_NAME: app-name
+
+jobs:
+  checkov-job:
+    runs-on: ubuntu-latest
+    name: checkov-action
+    strategy:
+      matrix:
+        env: [stg, prd, dev]
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - uses: azure/setup-kubectl@v1
+        id: install
+
+      - name: Setup Kustomize
+        uses: imranismail/setup-kustomize@v1
+        with:
+          kustomize-version: 3.8.8
+
+      - name: Setup Kubeval
+        uses: lra/setup-kubeval@v1
+
+      - uses: actions/setup-python@v2
+      - uses: BSFishy/pip-action@v1
+        with:
+          packages: |
+            kubesplit
+
+      - run: |
+               cd k8s/environments
+               cluster_manifest=/tmp/manifest.yaml
+               splitdir=/tmp/${{ matrix.env }}
+               echo "--------------------------------------------------------------------------------"
+               echo "Building manifests using Kustomize for cluster ${{ matrix.env }}"
+               kustomize build ${{ matrix.env }} > ${{ matrix.env }}_manifest 2> ${{ matrix.env }}/kustomize.log ||
+               if [ $? -gt 0 ]
+               then
+                       echo "ERROR: Kustomize build is executed with FAILURE for env ${{ matrix.env }}"
+                       echo "------------------------------------ LOG ----------------------------------------"
+                       cat ${{ matrix.env }}/kustomize.log
+                       exit 1
+               fi
+               echo "Spliting files for cluster ${{ matrix.env }} on $splitdir"
+               kubesplit -i ${{ matrix.env }}_manifest -o $splitdir > ${{ matrix.env }}/kubesplit.log 2>&1 ||
+               if [ $? -gt 0 ]
+               then
+                       echo "ERROR: Split files with kubesplit is executed with FAILURE for env ${{ matrix.env }}"
+                       echo "------------------------------------ LOG ----------------------------------------"
+                       cat ${{ matrix.env }}/kubesplit.log
+                       exit 1
+               fi
+               echo "Linting manifests for cluster ${{ matrix.env }}"
+               if [ $? -gt 0 ]
+               then
+                       echo "ERROR: Manifests validation with kubeval is executed with FAILURE for env ${{ matrix.env }}"
+                       echo "------------------------------------ LOG ----------------------------------------"
+                       cat ${{ matrix.env }}/kubeval.log | grep -v PASS
+                       exit 1
+               fi
+               echo "Result for cluster ${{ matrix.env }}: PASS"
+        name: split manifests ${{ matrix.env }}
+
+      - name: Run Checkov k8s ${{ matrix.env }}
+        id: checkov-k8s
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: /tmp/${{ matrix.env }}
+          framework: kubernetes  # optional: run only on a specific infrastructure {cloudformation,terraform,kubernetes,all}
+          output_format: json  # optional: the output format, one of: cli, json, junitxml, github_failed_only
+          download_external_modules: true  # optional: download external terraform modules from public git repositories and terraform registry
+          log_level: INFO  # optional: set log level. Default WARNING
+          # config_file: path/this_file
+          # baseline: cloudformation/.checkov.baseline # optional: Path to a generated baseline file. Will only report results not in the baseline.

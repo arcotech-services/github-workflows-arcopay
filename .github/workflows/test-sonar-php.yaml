@@ -1,0 +1,102 @@
+---
+name: SonarTest
+
+on:
+  pull_request:
+    paths:
+      - bin/**
+      - config/**
+      - data/**
+      - public/**
+      - src/**
+      - tests/**
+      - composer.json
+  push:
+    branches:
+      - master
+    paths:
+      - bin/**
+      - config/**
+      - data/**
+      - public/**
+      - src/**
+      - tests/**
+      - composer.json
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    if: (github.event_name == 'push' || github.event_name == 'pull_request') && contains(toJson(github.event.commits), '[NO_CI]') == false && contains(toJson(github.event.commits), '[ci skip]') == false && contains(toJson(github.event.commits), '[skip ci]') == false && contains(toJson(github.event.commits), '[k8s_sync]') == false
+
+    runs-on: self-hosted
+
+    strategy:
+      fail-fast: true
+      matrix:
+        php: [7.4]
+
+    name: P${{ matrix.php }}
+
+    steps:
+      - name: Install kafka dependencies
+        run: |
+          sudo apt update
+          sudo apt -y install php-pear php-dev librdkafka1 librdkafka-dev git
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: dom, curl, libxml, mbstring, zip, json, simplexml, intl, rdkafka
+          tools: composer:v2
+          coverage: xdebug
+
+      - name: Get Composer Cache Directory
+        id: composer-cache
+        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+
+      - uses: actions/cache@v2
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Setup test Env
+        run: |
+           cp sample.env .env
+           chmod 777 .env
+
+      - name: Install composer dependencies
+        run: composer update --no-interaction --no-progress
+
+      - name: Run Tests
+        run: composer test-coverage
+
+      - name: fix code coverage paths
+        working-directory: ./tests/coverage
+        run: |
+          sed -i 's/\/home\/runner\/work\/app-name\/app-name\//\/github\/workspace\//g' coverage-junit.xml
+          sed -i 's/\/home\/runner\/work\/app-name\/app-name\//\/github\/workspace\//g' coverage-clover.xml
+
+      - name: SonarQube Scan
+        uses: docker://sonarsource/sonar-scanner-cli:latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONARQUBE_HOST_URL }}
+          SONAR_LOGIN: ${{ secrets.SONARQUBE_USER }}
+          SONAR_PASSWORD: ${{ secrets.SONARQUBE_PASS }}
+        with:
+          args: >
+             -Dsonar.projectKey="app-name"
+             -Dsonar.verbose=true
+             -Dsonar.php.tests.reportPath="tests/coverage/coverage-junit.xml"
+             -Dsonar.php.coverage.reportPaths="tests/coverage/coverage-clover.xml"
+             -Dsonar.tests="tests/"
+             -Dsonar.sources="src/"
