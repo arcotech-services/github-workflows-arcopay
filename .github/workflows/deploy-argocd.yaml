@@ -12,7 +12,7 @@ on:
       APP_URL:
         required: false
         type: string
-        default: https://app.stg.arcopay.com.br
+        default: https://applocalhost
       ARGOCD_CONF_DIR:
         required: false
         type: string
