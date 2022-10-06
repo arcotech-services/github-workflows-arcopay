@@ -57,8 +57,9 @@ env:
 
 jobs:
   sync:
-    environment:
-      name: "${{ env.APP_ENV }}"
+    #environment:
+    #  name: ${{ env.APP_ENV }}
+    #  url: ${{ env.APP_URL }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
